@@ -59,7 +59,7 @@ const database = new sqlite3.Database(
   }
 );
 electron.ipcMain.on("get-tracks", (event) => {
-  const sql = "SELECT * FROM music_metadata LIMIT 100";
+  const sql = "SELECT * FROM music_metadata ORDER BY RANDOM() LIMIT 100 ";
   database.all(sql, (err, rows) => {
     event.reply("tracks", err && err.message || rows);
   });
@@ -72,10 +72,25 @@ electron.ipcMain.on("get-search-results", (event, args) => {
     event.reply("search-results", err && err.message || rows);
   });
 });
+electron.ipcMain.on("get-album-search-results", (event, args) => {
+  let { term } = args;
+  console.log(term);
+  term = term.toLowerCase();
+  const sql = "SELECT DISTINCT album AS name, artist, img, genre FROM music_metadata WHERE LOWER(album) LIKE '%" + term + "%'";
+  database.all(sql, (err, rows) => {
+    event.reply("album-search-results", err && err.message || rows);
+  });
+});
 electron.ipcMain.on("get-albums", (event) => {
-  const sql = "SELECT DISTINCT album AS name, artist, img, genre FROM music_metadata";
+  const sql = "SELECT DISTINCT album AS name, artist, img, genre FROM music_metadata ORDER BY RANDOM() LIMIT 50";
   database.all(sql, (err, rows) => {
     event.reply("albums", err && err.message || rows);
+  });
+});
+electron.ipcMain.on("get-popular-albums", (event) => {
+  const sql = "SELECT DISTINCT album AS name, artist, img, genre FROM music_metadata ORDER BY RANDOM() LIMIT 6";
+  database.all(sql, (err, rows) => {
+    event.reply("popular-albums", err && err.message || rows);
   });
 });
 electron.ipcMain.on("get-tracks-from-album", (event, args) => {

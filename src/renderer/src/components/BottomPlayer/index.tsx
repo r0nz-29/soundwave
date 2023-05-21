@@ -7,8 +7,7 @@ import {
   duration,
   pauseAudio,
   playAudio,
-  repeat,
-  setCurrentTime,
+  repeat, seek,
   setRepeat,
   state
 } from '../../state'
@@ -16,15 +15,15 @@ import {
 export default function BottomPlayer() {
   const totalMinutes = () => Math.floor(duration() / 60)
   const totalSeconds = () => (duration() - totalMinutes() * 60).toFixed(0)
-
   const currentMinutes = () => Math.floor(currentTime() / 60)
   const currentSeconds = () => (currentTime() - currentMinutes() * 60).toFixed(0)
 
   function setAudioTime(time: number) {
+    console.log(time);
     if (!activeAudio()) {
       return
     }
-    setCurrentTime(time)
+    seek(time)
   }
 
   return (

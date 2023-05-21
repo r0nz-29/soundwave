@@ -1,18 +1,24 @@
-import { For, onMount } from 'solid-js';
+import { createSignal, For, onMount } from 'solid-js'
 import { useNavigate } from '@solidjs/router';
 import { setActiveTrack, setSearchResult, setTracks, tracks } from '../../state'
 import Card from '../../components/TrackCard';
-import { Track } from '../../types'
+import AlbumCard from '../../components/AlbumCard';
+import { Album, Track } from '../../types'
 
 export default function Home() {
   const navigate = useNavigate();
+  const [trending, setTrending] = createSignal<Album[] | null>(null);
 
   onMount(() => {
     if (window.ipcRenderer !== null) {
       window.ipcRenderer.send('get-tracks', null);
+      window.ipcRenderer.send('get-popular-albums', null);
       window.ipcRenderer.on('tracks', (_event, rows: Track[]) => {
         setTracks(rows);
         setActiveTrack(rows[Math.floor(Math.random() * rows.length-1)])
+      });
+      window.ipcRenderer.on('popular-albums', (_event, rows: Album[]) => {
+        setTrending(rows);
       });
       window.ipcRenderer.on('music-metadata-error', (_event, error) => {
         console.error('Error retrieving music metadata:', error);
@@ -42,7 +48,15 @@ export default function Home() {
       />
       <br />
       <br />
-      <p class="text-slate-900 text-2xl">Top Tracks</p>
+      <p class="text-slate-900 text-2xl my-4">Trending</p>
+      <div class="grid grid-cols-6 gap-x-4 max-w-full overflow-x-auto">
+        <For each={trending()}>
+          {
+            (album) => <AlbumCard album={album} />
+          }
+        </For>
+      </div>
+      <p class="text-slate-900 text-2xl mt-8">Top Tracks</p>
       <div class="mt-4 text-left w-full text-slate-500 grid grid-cols-4 gap-4">
         <For
           each={tracks()}
